@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swiggy Ordering Agent</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --orange: #FC8019;
+    --orange-light: #FFF3E8;
+    --orange-dark: #E06A0A;
+    --green: #48C479;
+    --green-light: #EDFAF3;
+    --bg: #F2F2F2;
+    --white: #FFFFFF;
+    --text: #282C3F;
+    --text-muted: #7E808C;
+    --border: #E9E9EB;
+    --radius: 12px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--orange);
+    letter-spacing: -0.3px;
+  }
+
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--orange);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+
+  .status-pill {
+    background: var(--green-light);
+    color: var(--green);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+  }
+
+  .main {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 20px;
+    padding: 20px 24px;
+    max-width: 1100px;
+    margin: 0 auto;
+    width: 100%;
+    flex: 1;
+  }
+
+  .left-panel { display: flex; flex-direction: column; gap: 16px; }
+  .right-panel { display: flex; flex-direction: column; gap: 16px; }
+
+  .card {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-title .icon {
+    font-size: 16px;
+  }
+
+  .badge {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: var(--orange-light);
+    color: var(--orange);
+  }
+
+  .address-block {
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .address-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .address-item:hover { background: var(--bg); }
+
+  .address-item.active {
+    background: var(--orange-light);
+    outline: 1.5px solid var(--orange);
+  }
+
+  .address-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+
+  .address-item.active .address-icon { background: var(--white); }
+
+  .address-label { font-size: 13px; font-weight: 600; }
+  .address-text { font-size: 12px; color: var(--text-muted); margin-top: 2px; line-height: 1.4; }
+
+  .mode-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    background: var(--bg);
+    margin: 16px 20px;
+    border-radius: 10px;
+    padding: 4px;
+  }
+
+  .mode-tab {
+    padding: 9px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+    background: transparent;
+  }
+
+  .mode-tab.active {
+    background: var(--white);
+    color: var(--orange);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+
+  .chat-area {
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 340px;
+    max-height: 340px;
+    overflow-y: auto;
+  }
+
+  .msg {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .msg.user { flex-direction: row-reverse; }
+
+  .msg-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+
+  .msg.agent .msg-avatar { background: var(--orange-light); }
+  .msg.user .msg-avatar { background: var(--text); color: var(--white); }
+
+  .msg-bubble {
+    max-width: 78%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .msg.agent .msg-bubble {
+    background: var(--bg);
+    color: var(--text);
+    border-top-left-radius: 4px;
+  }
+
+  .msg.user .msg-bubble {
+    background: var(--orange);
+    color: var(--white);
+    border-top-right-radius: 4px;
+  }
+
+  .tool-call {
+    background: var(--orange-light);
+    border-left: 3px solid var(--orange);
+    padding: 8px 12px;
+    border-radius: 0 8px 8px 0;
+    font-size: 11px;
+    color: var(--orange-dark);
+    font-family: monospace;
+    margin: 4px 0;
+  }
+
+  .chat-input-area {
+    padding: 12px 20px 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .chat-input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s;
+    color: var(--text);
+    background: var(--white);
+  }
+
+  .chat-input:focus { border-color: var(--orange); }
+
+  .send-btn {
+    width: 38px;
+    height: 38px;
+    background: var(--orange);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: background 0.15s;
+    flex-shrink: 0;
+  }
+
+  .send-btn:hover { background: var(--orange-dark); }
+
+  .suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0 20px 14px;
+  }
+
+  .suggestion-chip {
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    cursor: pointer;
+    color: var(--text-muted);
+    background: var(--white);
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .suggestion-chip:hover {
+    border-color: var(--orange);
+    color: var(--orange);
+    background: var(--orange-light);
+  }
+
+  .confirm-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .confirm-header {
+    background: var(--orange);
+    padding: 14px 20px;
+    color: var(--white);
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .order-items { padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; }
+
+  .order-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+  }
+
+  .item-left { display: flex; align-items: center; gap: 10px; }
+
+  .item-veg-dot {
+    width: 12px;
+    height: 12px;
+    border: 1.5px solid var(--green);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .item-veg-dot::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+  }
+
+  .item-nonveg-dot {
+    width: 12px;
+    height: 12px;
+    border: 1.5px solid #E43B4F;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .item-nonveg-dot::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: #E43B4F;
+    border-radius: 50%;
+  }
+
+  .item-name { font-weight: 500; }
+  .item-qty { color: var(--text-muted); font-size: 12px; }
+  .item-price { font-weight: 600; }
+
+  .order-divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+  .order-totals { padding: 0 20px 4px; display: flex; flex-direction: column; gap: 6px; }
+
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .total-row.grand {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    padding-top: 6px;
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
+  }
+
+  .cap-warning {
+    margin: 12px 20px;
+    background: #FFF8E7;
+    border: 1px solid #FBBF24;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: #92400E;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .confirm-actions {
+    padding: 16px 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .btn {
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+
+  .btn-outline {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    color: var(--text-muted);
+  }
+
+  .btn-outline:hover { border-color: var(--text); color: var(--text); }
+
+  .btn-primary {
+    background: var(--orange);
+    color: var(--white);
+  }
+
+  .btn-primary:hover { background: var(--orange-dark); }
+
+  .track-card { padding: 16px 20px; }
+
+  .track-steps { display: flex; flex-direction: column; gap: 0; }
+
+  .track-step {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    position: relative;
+  }
+
+  .track-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 32px;
+    width: 2px;
+    height: 28px;
+    background: var(--border);
+  }
+
+  .track-step.done:not(:last-child)::after { background: var(--green); }
+
+  .track-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    border: 2px solid var(--border);
+    background: var(--white);
+    margin-bottom: 28px;
+  }
+
+  .track-step.done .track-icon {
+    background: var(--green-light);
+    border-color: var(--green);
+  }
+
+  .track-step.active .track-icon {
+    background: var(--orange-light);
+    border-color: var(--orange);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(252,128,25,0.3); }
+    50% { box-shadow: 0 0 0 6px rgba(252,128,25,0); }
+  }
+
+  .track-info { padding-top: 6px; }
+  .track-label { font-size: 13px; font-weight: 600; }
+  .track-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  .coupon-strip {
+    margin: 0 20px 12px;
+    background: var(--green-light);
+    border: 1px dashed var(--green);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: #166534;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    padding: 0 20px 10px;
+  }
+
+  .typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 14px;
+    background: var(--bg);
+    border-radius: 12px;
+    border-top-left-radius: 4px;
+    width: fit-content;
+  }
+
+  .typing-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--text-muted);
+    border-radius: 50%;
+    animation: bounce 1.2s ease-in-out infinite;
+  }
+
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-5px); }
+  }
+
+  .hidden { display: none; }
+
+  .success-banner {
+    background: var(--green);
+    color: var(--white);
+    padding: 12px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 0 0 var(--radius) var(--radius);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🍔</div>
+    Swiggy Agent
+  </div>
+  <div class="status-pill">
+    <div class="status-dot"></div>
+    Connected to Swiggy MCP
+  </div>
+</header>
+
+<div class="main">
+  <div class="left-panel">
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">📍</span> Delivery address</div>
+      </div>
+      <div class="address-block">
+        <div class="address-item active" onclick="selectAddress(this)">
+          <div class="address-icon">🏠</div>
+          <div>
+            <div class="address-label">Home</div>
+            <div class="address-text">B-204, DLF Phase 2, Gurgaon, 122002</div>
+          </div>
+        </div>
+        <div class="address-item" onclick="selectAddress(this)">
+          <div class="address-icon">💼</div>
+          <div>
+            <div class="address-label">Work</div>
+            <div class="address-text">Cyber Hub, DLF Cyber City, Gurgaon, 122002</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding: 0 20px 16px;">
+        <div class="section-label">Mode</div>
+        <div class="mode-tabs">
+          <button class="mode-tab active" onclick="switchMode('food', this)">🍛 Food</button>
+          <button class="mode-tab" onclick="switchMode('grocery', this)">🛒 Groceries</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="confirm-section">
+      <div class="confirm-header">🛒 Review your order</div>
+      <div class="order-items">
+        <div class="order-item">
+          <div class="item-left">
+            <div class="item-veg-dot"></div>
+            <div>
+              <div class="item-name">Paneer Butter Masala</div>
+              <div class="item-qty">x1</div>
+            </div>
+          </div>
+          <div class="item-price">₹320</div>
+        </div>
+        <div class="order-item">
+          <div class="item-left">
+            <div class="item-nonveg-dot"></div>
+            <div>
+              <div class="item-name">Chicken Biryani (Full)</div>
+              <div class="item-qty">x1</div>
+            </div>
+          </div>
+          <div class="item-price">₹399</div>
+        </div>
+        <div class="order-item">
+          <div class="item-left">
+            <div class="item-veg-dot"></div>
+            <div>
+              <div class="item-name">Garlic Naan</div>
+              <div class="item-qty">x2</div>
+            </div>
+          </div>
+          <div class="item-price">₹120</div>
+        </div>
+      </div>
+
+      <div class="coupon-strip">🏷️ SWIGGY50 applied — saved ₹50</div>
+
+      <div class="order-totals">
+        <div class="total-row"><span>Item total</span><span>₹839</span></div>
+        <div class="total-row"><span>Delivery fee</span><span>₹40</span></div>
+        <div class="total-row"><span>Discount</span><span style="color: var(--green)">−₹50</span></div>
+        <div class="total-row grand"><span>To pay (COD)</span><span>₹829</span></div>
+      </div>
+
+      <div class="cap-warning">⚠️ v1 COD cap ₹1,000 — order is within limit</div>
+
+      <div class="confirm-actions">
+        <button class="btn btn-outline" onclick="cancelOrder()">Cancel</button>
+        <button class="btn btn-primary" onclick="placeOrder()">Place order →</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="right-panel">
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">🤖</span> Agent</div>
+        <div class="badge" id="mode-badge">Food mode</div>
+      </div>
+
+      <div class="chat-area" id="chat">
+
+        <div class="msg agent">
+          <div class="msg-avatar">🤖</div>
+          <div>
+            <div class="tool-call">→ get_addresses()</div>
+            <div class="msg-bubble">Got your saved addresses. Using <strong>Home</strong> (DLF Phase 2, Gurgaon). What are you craving?</div>
+          </div>
+        </div>
+
+        <div class="msg user">
+          <div class="msg-avatar">R</div>
+          <div class="msg-bubble">I want biryani and some paneer, something nice nearby</div>
+        </div>
+
+        <div class="msg agent">
+          <div class="msg-avatar">🤖</div>
+          <div>
+            <div class="tool-call">→ search_restaurants({ addressId: "addr_01", query: "biryani paneer" })</div>
+            <div class="msg-bubble">Found 14 open restaurants nearby. Top pick: <strong>Paradise Biryani</strong> (4.3 ⭐, 28 min, 1.2 km). They have Chicken Biryani and Paneer dishes both. Should I pull up their menu?</div>
+          </div>
+        </div>
+
+        <div class="msg user">
+          <div class="msg-avatar">R</div>
+          <div class="msg-bubble">Yes, show me</div>
+        </div>
+
+        <div class="msg agent">
+          <div class="msg-avatar">🤖</div>
+          <div>
+            <div class="tool-call">→ get_restaurant_menu({ restaurantId: "rest_paradise_001" })</div>
+            <div class="tool-call">→ fetch_food_coupons()</div>
+            <div class="msg-bubble">Added Paneer Butter Masala (₹320), Chicken Biryani Full (₹399), and 2x Garlic Naan (₹120). Also applied coupon <strong>SWIGGY50</strong> — saves ₹50. Total comes to <strong>₹829 (COD)</strong>. Review your order on the left and confirm when ready.</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="suggestions">
+        <div class="suggestion-chip" onclick="sendSuggestion(this)">Order biryani near me</div>
+        <div class="suggestion-chip" onclick="sendSuggestion(this)">Get milk and eggs from Instamart</div>
+        <div class="suggestion-chip" onclick="sendSuggestion(this)">Track my last order</div>
+        <div class="suggestion-chip" onclick="sendSuggestion(this)">Find veg options only</div>
+      </div>
+
+      <div class="chat-input-area">
+        <input class="chat-input" id="user-input" placeholder="Ask the agent anything..." onkeydown="handleKey(event)" />
+        <button class="send-btn" onclick="sendMessage()">↑</button>
+      </div>
+    </div>
+
+    <div class="card" id="track-card" style="display:none">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">🛵</span> Order tracking</div>
+        <div class="badge" style="background: var(--green-light); color: var(--green)">Live</div>
+      </div>
+      <div class="track-card">
+        <div class="track-steps">
+          <div class="track-step done">
+            <div class="track-icon">✓</div>
+            <div class="track-info">
+              <div class="track-label">Order placed</div>
+              <div class="track-sub">7:42 PM</div>
+            </div>
+          </div>
+          <div class="track-step done">
+            <div class="track-icon">✓</div>
+            <div class="track-info">
+              <div class="track-label">Restaurant accepted</div>
+              <div class="track-sub">Paradise Biryani confirmed</div>
+            </div>
+          </div>
+          <div class="track-step active">
+            <div class="track-icon">🍳</div>
+            <div class="track-info">
+              <div class="track-label">Preparing your food</div>
+              <div class="track-sub">Estimated 15 min</div>
+            </div>
+          </div>
+          <div class="track-step">
+            <div class="track-icon">🛵</div>
+            <div class="track-info">
+              <div class="track-label">Out for delivery</div>
+              <div class="track-sub">—</div>
+            </div>
+          </div>
+          <div class="track-step">
+            <div class="track-icon">🏠</div>
+            <div class="track-info">
+              <div class="track-label">Delivered</div>
+              <div class="track-sub">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const agentReplies = {
+  food: [
+    { tool: "→ search_restaurants({ query: '{q}' })", text: "Found some great options nearby. Should I pick the top-rated one and pull up their menu?" },
+    { tool: "→ get_restaurant_menu({ restaurantId: '...' })", text: "Got the menu. What items would you like to add?" },
+    { tool: "→ update_food_cart({ items: [...] })", text: "Added to cart. Anything else, or shall I check for coupons and show you the total?" },
+    { tool: "→ fetch_food_coupons() → apply_food_coupon({ code: 'SWIGGY50' })", text: "Applied SWIGGY50 — saves ₹50. Your cart is ready to review on the left." },
+    { tool: "→ track_food_order({ orderId: '...' })", text: "Fetching live status for your order now..." }
+  ],
+  grocery: [
+    { tool: "→ search_instamart({ query: '{q}' })", text: "Found those items on Instamart — delivery in 10 minutes. Want me to add them to your grocery cart?" },
+    { tool: "→ update_instamart_cart({ items: [...] })", text: "Added to your grocery cart. Review the total on the left and confirm when ready." }
+  ]
+};
+
+let currentMode = 'food';
+let msgCount = 0;
+
+function selectAddress(el) {
+  document.querySelectorAll('.address-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function switchMode(mode, btn) {
+  currentMode = mode;
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('mode-badge').textContent = mode === 'food' ? 'Food mode' : 'Grocery mode';
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter') sendMessage();
+}
+
+function sendSuggestion(el) {
+  document.getElementById('user-input').value = el.textContent;
+  sendMessage();
+}
+
+function sendMessage() {
+  const input = document.getElementById('user-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+
+  appendMsg('user', null, text);
+
+  const typing = appendTyping();
+  setTimeout(() => {
+    typing.remove();
+    const replies = agentReplies[currentMode];
+    const reply = replies[msgCount % replies.length];
+    const toolText = reply.tool.replace('{q}', text);
+    appendMsg('agent', toolText, reply.text);
+    msgCount++;
+
+    if (text.toLowerCase().includes('track')) {
+      document.getElementById('track-card').style.display = 'block';
+    }
+  }, 1200);
+}
+
+function appendMsg(role, tool, text) {
+  const chat = document.getElementById('chat');
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  const avatar = role === 'agent' ? '🤖' : 'R';
+  let inner = `<div class="msg-avatar">${avatar}</div><div>`;
+  if (tool) inner += `<div class="tool-call">${tool}</div>`;
+  inner += `<div class="msg-bubble">${text}</div></div>`;
+  div.innerHTML = inner;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function appendTyping() {
+  const chat = document.getElementById('chat');
+  const div = document.createElement('div');
+  div.className = 'msg agent';
+  div.innerHTML = `<div class="msg-avatar">🤖</div><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+  return div;
+}
+
+function cancelOrder() {
+  document.getElementById('confirm-section').style.display = 'none';
+  appendMsg('agent', null, 'Order cancelled. What else can I help you with?');
+}
+
+function placeOrder() {
+  const section = document.getElementById('confirm-section');
+  section.innerHTML = `<div class="success-banner">✅ Order placed! Tracking live below.</div>`;
+  document.getElementById('track-card').style.display = 'block';
+  appendMsg('agent', '→ place_food_order({ paymentMethod: "COD" })', 'Order placed successfully! Tracking it live for you now.');
+  document.getElementById('track-card').scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
